@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react'
-import { CgDarkMode } from 'react-icons/cg';
+import { CgDarkMode, CgCloseO } from 'react-icons/cg';
+import HighlightedText from './HighlightedText';
 import countrys from './assets/countrys.json'
 
 function App() {
-    const [selectedCountry, setSelectedCountry] = useState<string>("Pick a country")
+    const [countryInput, setCountryInput] = useState<string>("");
 
     useEffect(() => {
         const storedCountry = localStorage.getItem("selectedCountry");
-        if (storedCountry) {
-            setSelectedCountry(storedCountry);
+        if (storedCountry || storedCountry == "") {
+            setCountryInput(storedCountry);
         }
-    }, []); 
+    }, []);
 
     const handleDarkMode = () => {
         let storedTheme = localStorage.getItem("theme");
@@ -25,28 +26,48 @@ function App() {
     }
 
     const handleClick = (countryName: string) => {
-        setSelectedCountry(countryName);
+        setCountryInput(countryName);
         localStorage.setItem("selectedCountry", countryName);
+    };
+
+    const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCountryInput(e.target.value);
+    };
+
+    const handleDelete = (e: React.MouseEvent<SVGElement>) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setCountryInput("");
+        localStorage.setItem("selectedCountry", "");
     };
 
     function generateCountryList() {
         let countryList = [];
         for (const [index, country] of countrys.entries()) {
-            countryList.push(<li key={country.code + index}>
-            <button
-                className="text-base-content"
-                onClick={() => handleClick(country.name)}
-            >
-                {country.name}
-            </button></li>);
+            let countryName = <>{country.name}</>;
+            if (countryInput) {
+
+                countryName = <HighlightedText text={country.name} highlight={countryInput} />
+
+                if (!country.name.toLowerCase().includes(countryInput.toLocaleLowerCase())) {
+                    continue;
+                }
+            }
+
+            countryList.push(
+                <li key={country.code + index}>
+                    <button
+                        className="btn-ghost"
+                        onClick={() => handleClick(country.name)}
+                    >
+                        {countryName}
+                    </button>
+                </li>
+            );
         }
 
         return countryList;
     }
-
-    console.log('moo', selectedCountry);
-
-
 
     return (
         <div className="flex w-full flex-col h-screen justify-between">
@@ -56,17 +77,24 @@ function App() {
                 </div>
                 <div className="flex-none">
                     <button className="btn btn-square btn-ghost" onClick={handleDarkMode}>
-                        <CgDarkMode className="h-6 w-6" />
+                        <CgDarkMode className="h-7 w-7" />
                     </button>
                 </div>
             </div>
 
             <div className="flex w-full h-2/4 justify-center">
                 <div className="dropdown">
-                    <input
-                        className="input input-lg input-bordered w-96 text-lg"
-                        placeholder={selectedCountry}
-                    />
+                    <label className="input input-lg w-96 input-bordered flex items-center justify-between">
+                        <input
+                            placeholder="Pick a country"
+                            onChange={handleInput}
+                            value={countryInput}
+                        />
+                        <CgCloseO
+                            className="h-6 w-6"
+                            onClick={handleDelete}
+                        />
+                    </label>
                     <ul className="text-lg dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-lg w-96 max-h-80 flex-nowrap overflow-auto">
                         {generateCountryList()}
                     </ul>
