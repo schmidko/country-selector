@@ -5,8 +5,16 @@ interface HighlightedTextProps {
     highlight: string;
 }
 
+/**
+ * Escape regex special characters
+ */
+const escapeRegExp = (string: string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 const HighlightedText: React.FC<HighlightedTextProps> = ({ text, highlight }) => {
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    
+    const parts = text.split(new RegExp(`(${escapeRegExp(highlight)})`, 'gi'));
 
     return (
         <span>

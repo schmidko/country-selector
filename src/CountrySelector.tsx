@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { CgCloseO } from 'react-icons/cg';
 import HighlightedText from './HighlightedText';
-import countrys from './assets/countrys.json'
+import countryListComplete from './assets/countrys.json'
 
-function App() {
+/**
+ * Component to select an country with mouse and keyboard
+ */
+function CountrySelector() {
+    let filteredCountryList: string[] = [];
     const itemRefs = useRef<(HTMLLIElement | null)[]>([]); // ref for dropdown
 
     const [countryInput, setCountryInput] = useState<string>("");
     const [activeIndex, setActiveIndex] = useState<number>(-1);
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-    let filteredCountryList: string[] = [];
 
     useEffect(() => {
         const storedCountry = localStorage.getItem("selectedCountry");
@@ -27,6 +30,10 @@ function App() {
         }
     }, [activeIndex]);
 
+
+    /**
+     * Handles the click in the dropdown menu
+     */
     const handleClickCountry = (countryName: string) => {
         setCountryInput(countryName);
         setActiveIndex(-1);
@@ -34,11 +41,17 @@ function App() {
         localStorage.setItem("selectedCountry", countryName);
     };
 
+    /**
+     * Handles the typing in the input element
+     */
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCountryInput(e.target.value);
         setActiveIndex(-1);
     };
 
+    /**
+     * Handles the delete button
+     */
     const handleDelete = (e: React.MouseEvent<SVGElement>) => {
         e.stopPropagation();
         e.preventDefault();
@@ -48,6 +61,9 @@ function App() {
         localStorage.setItem("selectedCountry", "");
     };
 
+    /**
+     * Handles all keyboard events
+     */
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "ArrowDown") {
             setActiveIndex((prev) => (prev < filteredCountryList.length - 1 ? prev + 1 : prev));
@@ -60,14 +76,20 @@ function App() {
         }
     };
 
-    function generateCountryList() {
+    /**
+     * Generates a the country list of the dropdown
+     */
+    const generateCountryList = () => {
         let countryList = [];
         let countryNameList = [];
-        for (const [index, country] of countrys.entries()) {
-            let countryName = <>{country.name}</>;
+
+        const countryListCompleteReformated = countryListComplete.map((el) => `${el.name} (${el.code})`);
+        for (const [index, country] of countryListCompleteReformated.entries()) {
+            
+            let countryName = <>{country}</>;
             if (countryInput) {
-                countryName = <HighlightedText text={country.name} highlight={countryInput} />
-                if (!country.name.toLowerCase().includes(countryInput.toLocaleLowerCase())) {
+                countryName = <HighlightedText text={country} highlight={countryInput} />
+                if (!country.toLowerCase().includes(countryInput.toLocaleLowerCase())) {
                     continue;
                 }
             }
@@ -79,22 +101,21 @@ function App() {
 
             countryList.push(
                 <li
-                    key={country.code + index}
-                    ref={(el) => (itemRefs.current[index] = el)} // Assign ref to each item
+                    key={index}
+                    ref={(el) => (itemRefs.current[index] = el)}
                 >
                     <button
                         className={classes}
-                        onClick={() => handleClickCountry(country.name)}
+                        onClick={() => handleClickCountry(country)}
                     >
                         {countryName}
                     </button>
                 </li>
             );
 
-            countryNameList.push(country.name);
+            countryNameList.push(country);
         }
         filteredCountryList = countryNameList;
-
         return countryList;
     }
 
@@ -124,4 +145,4 @@ function App() {
     )
 }
 
-export default App
+export default CountrySelector;

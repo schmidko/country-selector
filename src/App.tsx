@@ -1,7 +1,10 @@
 
-import { CgDarkMode} from 'react-icons/cg';
-import CountrySelector from './CountrySelector';
+import {CgDarkMode} from 'react-icons/cg';
+import CountrySelector from './CountrySelector.tsx';
 
+/**
+ * Root component with header and footer
+ */
 function App() {
 
     const handleDarkMode = () => {
